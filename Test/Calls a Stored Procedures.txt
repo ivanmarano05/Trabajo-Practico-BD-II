@@ -1,0 +1,28 @@
+-- Llamada para rendir horas diarias:
+
+call RendicionDeHorasDiarias('Martin Perez', 8);
+
+-- Llamada para rendir horas semanales:
+
+call RendicionDeHorasSemanales('Walter Dominguez', 6);
+
+-- Llamada para rendir horas mensuales:
+
+call RendicionDeHorasMensuales('Ezequiel Gomez', 4, 'marzo');
+
+-- Llamada para calcular liquidación total:
+
+call CalcularLiquidacionTotal('Project Manager');
+
+-- Llamada para calcular liquidación por proyecto:
+
+call CalcularLiquidacionPorProyecto('Mejorar calidad de imagen');
+
+-- Llamada para calcular liquidación por cliente:
+
+call CalcularLiquidacionPorCliente('Instagram');
+
+-- Llamada para calcular liquidación con ajuste:
+
+call CalcularLiquidacionConAjuste('Project Manager', -42);
+

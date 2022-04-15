@@ -1,0 +1,102 @@
+-- Rendición de horas diarias:
+
+DELIMITER $$			 
+create procedure RendicionDeHorasDiarias(in nombre varchar(255), in horas int)
+begin
+	update participante p
+	set p.horas_rendidas = p.horas_rendidas+horas where p.nombre = nombre;
+end;
+$$
+
+-- Rendición de horas semanales:
+
+DELIMITER $$
+create procedure RendicionDeHorasSemanales(in nombre varchar(255), in horas int)
+begin
+	update participante p
+	set p.horas_rendidas = p.horas_rendidas+(horas*7) where p.nombre = nombre;
+end;
+$$
+
+-- Rendición de horas mensuales:
+
+DELIMITER $$
+create procedure RendicionDeHorasMensuales(in nombre varchar(255), in horas int,
+in mes varchar(10))
+begin
+	if (mes = 'febrero') then
+		update participante p
+		set p.horas_rendidas = p.horas_rendidas+(horas*28) where p.nombre = nombre;
+	elseif (mes = 'abril' or mes = 'junio' or mes = 'septiembre' or mes = 'noviembre') then
+		update participante p
+		set p.horas_rendidas = p.horas_rendidas+(horas*30) where p.nombre = nombre;
+	else
+		update participante p
+		set p.horas_rendidas = p.horas_rendidas+(horas*31) where p.nombre = nombre;
+	end if;
+end;
+$$
+
+-- Liquidación total:
+
+DELIMITER $$
+create procedure CalcularLiquidacionTotal(in rol_a_liquidar varchar(255))
+begin
+	select @horas := sum(p.horas_rendidas) as horas_rendidas
+	from participante p
+		inner join rol r on r.id = p.id_rol
+	where r.descripcion = rol_a_liquidar
+	group by p.id_rol;
+	update liquidacion l
+		inner join rol r on l.id_rol_liquidado = r.id
+		inner join participante p on p.id_rol = r.id
+	set l.liquidacion_total = @horas where r.descripcion = rol_a_liquidar;
+end;
+$$
+
+-- Liquidación por proyecto:
+
+DELIMITER $$
+create procedure CalcularLiquidacionPorProyecto(in proyecto_a_liquidar varchar(255))
+begin
+	select pr.descripcion as proyecto, sum(p.horas_rendidas) as horas_liquidadas
+	from participante p
+		inner join rol r on r.id = p.id_rol
+		inner join proyecto pr on pr.id = p.id_proyecto
+	where pr.descripcion = proyecto_a_liquidar
+	group by pr.id;
+end;
+$$
+
+-- Liquidación por cliente:
+
+DELIMITER $$
+create procedure CalcularLiquidacionPorCliente(in cliente_a_liquidar varchar(255))
+begin
+	select c.descripcion as cliente, sum(p.horas_rendidas) as horas_liquidadas
+	from participante p
+		inner join rol r on r.id = p.id_rol
+		inner join proyecto pr on pr.id = p.id_proyecto
+		inner join cliente c on c.id = pr.id_cliente
+	where c.descripcion = cliente_a_liquidar
+	group by c.id;
+end;
+$$
+
+-- Liquidación con ajuste:
+
+DELIMITER $$
+create procedure CalcularLiquidacionConAjuste(in rol_a_modificar varchar(255),
+in cantidad_horas int)
+begin
+	update liquidacion l
+		inner join rol r on l.id_rol_liquidado = r.id
+	set l.modif_liquidacion_total = cantidad_horas where r.descripcion = rol_a_modificar;
+	select r.descripcion as rol, l.liquidacion_total as liquidacion_original,
+	l.modif_liquidacion_total as horas_modificadas,
+	(l.liquidacion_total + l.modif_liquidacion_total) as nueva_liquidacion
+	from liquidacion l
+		inner join rol r on l.id_rol_liquidado = r.id 
+	where rol_a_modificar = r.descripcion;
+end;
+$$

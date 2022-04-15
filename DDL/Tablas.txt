@@ -1,0 +1,54 @@
+-- Tabla cliente:
+
+create table cliente(
+	id int not null auto_increment primary key,
+	descripcion varchar(255)
+)
+
+-- Tabla proyecto:
+
+create table proyecto(
+	id int not null auto_increment primary key,
+	descripcion varchar(255),
+	id_cliente int
+)
+
+-- Tabla rol:
+
+create table rol(
+	id int not null auto_increment primary key,
+	descripcion varchar(255)
+)
+
+-- Tabla participante:
+
+create table participante(
+	id int not null auto_increment primary key,
+	nombre varchar(255),
+	id_rol int,
+	id_proyecto int,
+	horas_asignadas int,
+	horas_rendidas int
+)
+
+-- Tabla liquidacion:
+
+create table liquidacion(
+	id_rol_liquidado int,
+	liquidacion_total int,
+	modif_liquidacion_total int
+)
+
+-- Agregación de foreign keys:
+
+alter table proyecto
+	add constraint foreign key (id_cliente) references cliente(id);
+	
+alter table participante
+	add constraint foreign key (id_proyecto) references proyecto(id);
+	
+alter table participante
+	add constraint foreign key (id_rol) references rol(id);
+	
+alter table liquidacion
+	add constraint foreign key (id_rol_liquidado) references rol(id);

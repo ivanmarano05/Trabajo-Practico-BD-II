@@ -1,0 +1,32 @@
+-- Insert en tabla cliente:
+
+insert into cliente(descripcion)
+	values ('Instagram')
+
+-- Insert en tabla proyecto:
+			 
+insert into proyecto(descripcion, id_cliente)
+	values ('Mejorar calidad de imagen', 1),
+			 ('Agregar llamadas', 1),
+			 ('Conseguir publicidad', 1)
+			 
+-- Insert en tabla rol:
+
+insert into rol(descripcion)
+	values ('Project Manager'),
+			 ('Tester'),
+			 ('Diseñador')
+			 
+-- Insert en tabla participante:
+
+insert into participante(nombre, id_rol, id_proyecto, horas_asignadas, horas_rendidas)
+	values ('Martin Perez', 1, 1, 160, 0),
+			 ('Walter Dominguez', 2, 1, 150, 0),
+			 ('Ezequiel Gomez', 3, 2, 145, 0),
+			 ('Alan Echeverria', 2, 3, 160, 0),
+			 ('Fabian Penco', 1, 3, 140, 0)
+			 
+-- Insert en tabla liquidación:
+
+insert into liquidacion(id_rol_liquidado)
+	values (1), (2), (3)
