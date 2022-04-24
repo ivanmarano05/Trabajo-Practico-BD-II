@@ -1,28 +1,31 @@
 -- Llamada para rendir horas diarias:
 
-call RendicionDeHorasDiarias('Martin Perez', 8);
+call RendicionDeHoras('Fabian Penco', 'Project Manager',
+'Agregar llamadas', '2022-01-01', 4, 'diarias');
 
 -- Llamada para rendir horas semanales:
 
-call RendicionDeHorasSemanales('Walter Dominguez', 6);
+call RendicionDeHoras('Walter Dominguez', 'Tester',
+'Mejorar calidad de imagen', '2023-01-07', 6, 'semanales');
 
 -- Llamada para rendir horas mensuales:
 
-call RendicionDeHorasMensuales('Ezequiel Gomez', 4, 'marzo');
+call RendicionDeHoras('Alan Echeverria', 'Diseñador',
+'Conseguir publicidad', '2024-01-31', 8, 'mensuales');
 
 -- Llamada para calcular liquidación total:
 
-call CalcularLiquidacionTotal('Project Manager');
+call CalcularLiquidacionTotal('Diseñador', 1, 2023);
 
 -- Llamada para calcular liquidación por proyecto:
 
-call CalcularLiquidacionPorProyecto('Mejorar calidad de imagen');
+call CalcularLiquidacionPorProyecto('Mejorar calidad de imagen', 3, 2023);
 
 -- Llamada para calcular liquidación por cliente:
 
-call CalcularLiquidacionPorCliente('Instagram');
+call CalcularLiquidacionPorCliente('Instagram', 1, 2023);
 
 -- Llamada para calcular liquidación con ajuste:
 
-call CalcularLiquidacionConAjuste('Project Manager', -42);
+call CalcularLiquidacionConAjuste('Diseñador', -52, 1, 2023);
 

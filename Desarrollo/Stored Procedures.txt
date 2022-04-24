@@ -1,69 +1,69 @@
--- Rendición de horas diarias:
+-- Rendición de horas diarias, semanales y mensuales:
 
 DELIMITER $$			 
-create procedure RendicionDeHorasDiarias(in nombre varchar(255), in horas int)
+create procedure RendicionDeHoras(in nombre_part varchar(255),
+in rol_part varchar(255), in proyecto_part varchar(255), in fecha_part date,
+in horas_part int, in tipo_carga varchar(255))
 begin
-	update participante p
-	set p.horas_rendidas = p.horas_rendidas+horas where p.nombre = nombre;
-end;
-$$
-
--- Rendición de horas semanales:
-
-DELIMITER $$
-create procedure RendicionDeHorasSemanales(in nombre varchar(255), in horas int)
-begin
-	update participante p
-	set p.horas_rendidas = p.horas_rendidas+(horas*7) where p.nombre = nombre;
-end;
-$$
-
--- Rendición de horas mensuales:
-
-DELIMITER $$
-create procedure RendicionDeHorasMensuales(in nombre varchar(255), in horas int,
-in mes varchar(10))
-begin
-	if (mes = 'febrero') then
-		update participante p
-		set p.horas_rendidas = p.horas_rendidas+(horas*28) where p.nombre = nombre;
-	elseif (mes = 'abril' or mes = 'junio' or mes = 'septiembre' or mes = 'noviembre') then
-		update participante p
-		set p.horas_rendidas = p.horas_rendidas+(horas*30) where p.nombre = nombre;
+	SELECT @id_part := p.id as num_participante
+	FROM participante p WHERE p.nombre = nombre_part;
+	SELECT @id_r := r.id as num_rol
+	FROM rol r WHERE r.descripcion = rol_part;
+	SELECT @id_proy := p.id as num_proyecto
+	FROM proyecto p WHERE p.descripcion = proyecto_part;
+	
+	if (tipo_carga = 'diarias') then
+		insert into horas_rendidas(id_participante, id_rol, id_proyecto, fecha,
+											tipo_de_carga, horas)
+		values(@id_part, @id_r, @id_proy, fecha_part, 'diarias', horas_part);
+		
+	elseif (tipo_carga = 'semanales') then
+		insert into horas_rendidas(id_participante, id_rol, id_proyecto, fecha,
+											tipo_de_carga, horas)
+		values(@id_part, @id_r, @id_proy, fecha_part, 'semanales', horas_part*5);
+		
 	else
-		update participante p
-		set p.horas_rendidas = p.horas_rendidas+(horas*31) where p.nombre = nombre;
-	end if;
+		insert into horas_rendidas(id_participante, id_rol, id_proyecto, fecha,
+											tipo_de_carga, horas)
+		values(@id_part, @id_r, @id_proy, fecha_part, 'mensuales', horas_part*22);
+	end if;	
 end;
 $$
 
 -- Liquidación total:
 
 DELIMITER $$
-create procedure CalcularLiquidacionTotal(in rol_a_liquidar varchar(255))
+create procedure CalcularLiquidacionTotal(in rol_a_liquidar varchar(255), in mes_a_liquidar int,
+in año_a_liquidar year)
 begin
-	select @horas := sum(p.horas_rendidas) as horas_rendidas
-	from participante p
-		inner join rol r on r.id = p.id_rol
-	where r.descripcion = rol_a_liquidar
-	group by p.id_rol;
-	update liquidacion l
-		inner join rol r on l.id_rol_liquidado = r.id
-		inner join participante p on p.id_rol = r.id
-	set l.liquidacion_total = @horas where r.descripcion = rol_a_liquidar;
+	select @horas := sum(hr.horas) as horas_rendidas
+	from horas_rendidas hr
+		inner join rol r on r.id = hr.id_rol
+	where r.descripcion = rol_a_liquidar and
+	month(hr.fecha) = mes_a_liquidar and year(hr.fecha) = año_a_liquidar
+	group by hr.id_rol;
+	
+	SELECT @id_r := r.id as num_rol
+	FROM rol r WHERE r.descripcion = rol_a_liquidar;
+	
+	insert into liquidacion(id_rol_liquidado, liquidacion_total, mes, año)
+	values (@id_r, @horas, mes_a_liquidar, año_a_liquidar);
 end;
 $$
 
 -- Liquidación por proyecto:
 
 DELIMITER $$
-create procedure CalcularLiquidacionPorProyecto(in proyecto_a_liquidar varchar(255))
+create procedure CalcularLiquidacionPorProyecto(in proyecto_a_liquidar varchar(255),
+in mes_a_consultar int, in año_a_consultar year)
 begin
-	select pr.descripcion as proyecto, sum(p.horas_rendidas) as horas_liquidadas
-	from participante p
-		inner join rol r on r.id = p.id_rol
-		inner join proyecto pr on pr.id = p.id_proyecto
-	where pr.descripcion = proyecto_a_liquidar
+	select pr.descripcion as proyecto, sum(hr.horas) as horas_liquidadas, mes_a_consultar
+	as mes, año_a_consultar as año
+	from horas_rendidas hr
+		inner join rol r on r.id = hr.id_rol
+		inner join proyecto pr on pr.id = hr.id_proyecto
+	where pr.descripcion = proyecto_a_liquidar and
+	month(hr.fecha) = mes_a_consultar and year(hr.fecha) = año_a_consultar
 	group by pr.id;
 end;
 $$
@@ -71,14 +71,17 @@ $$
 -- Liquidación por cliente:
 
 DELIMITER $$
-create procedure CalcularLiquidacionPorCliente(in cliente_a_liquidar varchar(255))
+create procedure CalcularLiquidacionPorCliente(in cliente_a_liquidar varchar(255),
+in mes_a_consultar int, in año_a_consultar year)
 begin
-	select c.descripcion as cliente, sum(p.horas_rendidas) as horas_liquidadas
-	from participante p
-		inner join rol r on r.id = p.id_rol
-		inner join proyecto pr on pr.id = p.id_proyecto
+	select c.descripcion as cliente, sum(hr.horas) as horas_liquidadas, mes_a_consultar as mes,
+	año_a_consultar as año
+	from horas_rendidas hr
+		inner join rol r on r.id = hr.id_rol
+		inner join proyecto pr on pr.id = hr.id_proyecto
 		inner join cliente c on c.id = pr.id_cliente
-	where c.descripcion = cliente_a_liquidar
+	where c.descripcion = cliente_a_liquidar and
+	month(hr.fecha) = mes_a_consultar and year(hr.fecha) = año_a_consultar
 	group by c.id;
 end;
 $$
@@ -87,16 +90,20 @@ $$
 
 DELIMITER $$
 create procedure CalcularLiquidacionConAjuste(in rol_a_modificar varchar(255),
-in cantidad_horas int)
+in cantidad_horas int, in mes_a_modificar int, in año_a_modificar year)
 begin
 	update liquidacion l
 		inner join rol r on l.id_rol_liquidado = r.id
-	set l.modif_liquidacion_total = cantidad_horas where r.descripcion = rol_a_modificar;
+	set l.modif_liquidacion_total = cantidad_horas where r.descripcion = rol_a_modificar
+	and mes = mes_a_modificar and año = año_a_modificar;
+	
 	select r.descripcion as rol, l.liquidacion_total as liquidacion_original,
+	mes_a_modificar as mes, año_a_modificar as año, 
 	l.modif_liquidacion_total as horas_modificadas,
 	(l.liquidacion_total + l.modif_liquidacion_total) as nueva_liquidacion
 	from liquidacion l
 		inner join rol r on l.id_rol_liquidado = r.id 
-	where rol_a_modificar = r.descripcion;
+	where rol_a_modificar = r.descripcion and
+	mes = mes_a_modificar and año = año_a_modificar;
 end;
 $$

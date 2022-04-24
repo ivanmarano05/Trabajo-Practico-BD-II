@@ -24,11 +24,18 @@ create table rol(
 
 create table participante(
 	id int not null auto_increment primary key,
-	nombre varchar(255),
+	nombre varchar(255)
+)
+
+-- Tabla horas rendidas:
+
+create table horas_rendidas(
+	id_participante int,
 	id_rol int,
 	id_proyecto int,
-	horas_asignadas int,
-	horas_rendidas int
+	fecha date,
+	tipo_de_carga varchar(15),
+	horas int
 )
 
 -- Tabla liquidacion:
@@ -36,6 +43,8 @@ create table participante(
 create table liquidacion(
 	id_rol_liquidado int,
 	liquidacion_total int,
+	mes int,
+	año year,
 	modif_liquidacion_total int
 )
 
@@ -44,11 +53,14 @@ create table liquidacion(
 alter table proyecto
 	add constraint foreign key (id_cliente) references cliente(id);
 	
-alter table participante
-	add constraint foreign key (id_proyecto) references proyecto(id);
+alter table horas_rendidas
+	add constraint foreign key (id_participante) references participante(id);
 	
-alter table participante
+alter table horas_rendidas
 	add constraint foreign key (id_rol) references rol(id);
+	
+alter table horas_rendidas
+	add constraint foreign key (id_proyecto) references proyecto(id);
 	
 alter table liquidacion
 	add constraint foreign key (id_rol_liquidado) references rol(id);
