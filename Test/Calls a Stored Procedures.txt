@@ -17,6 +17,10 @@ call RendicionDeHorasMensuales('Martin Perez', 'Diseñador',
 
 call CalcularLiquidacionTotal('Diseñador', 'Conseguir publicidad', 3, 2022);
 
+-- Llamada para cambiar numerador (dentro de calcularLiquidacionTotal):
+
+call cambiarNumerador();
+
 -- Llamada para calcular liquidación por proyecto:
 
 call CalcularLiquidacionPorProyecto('Agregar llamadas', 1, 2022);

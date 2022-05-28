@@ -25,3 +25,8 @@ insert into participante(nombre)
 		 ('Ezequiel Gomez'),
 		 ('Alan Echeverria'),
 		 ('Fabian Penco')
+
+-- Insert en tabla numerador:
+
+insert into numerador(id, tabla, siguiente)
+	values (0, 'liquidacion', 1);

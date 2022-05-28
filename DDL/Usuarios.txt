@@ -1,0 +1,19 @@
+-- Creacion de usuarios:
+
+create user app_carga identified by '123';
+create user liquidador identified by '123';
+create user administrador identified by '123';
+
+-- Permisos para usuario app_carga:
+
+grant execute on procedure trabajo_practico.RendicionDeHorasDiarias to app_carga@'%';
+grant execute on procedure trabajo_practico.RendicionDeHorasSemanales to app_carga@'%';
+grant execute on procedure trabajo_practico.RendicionDeHorasMensuales to app_carga@'%';
+
+-- Permisos para usuario liquidador:
+
+grant execute on procedure trabajo_practico.CalcularLiquidacionTotal to liquidador@'%';
+
+-- Permisos para usuario administrador:
+
+grant all privileges on trabajo_practico.* to administrador@'%';

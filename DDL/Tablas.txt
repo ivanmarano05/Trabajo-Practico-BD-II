@@ -49,6 +49,14 @@ create table liquidacion(
 	modif_liquidacion_total int
 );
 
+-- Tabla numerador:
+
+create table numerador(
+	id int,
+	tabla varchar(255),
+	siguiente int
+);
+
 -- Agregación de foreign keys:
 
 alter table proyecto
